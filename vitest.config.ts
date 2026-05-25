@@ -4,7 +4,7 @@ import path from "path";
 export default defineConfig({
   test: {
     globals: true,
-    include: ["src/lib/use-cases/**/*.spec.ts"],
+    include: ["src/**/*.spec.ts"],
   },
   resolve: {
     alias: {

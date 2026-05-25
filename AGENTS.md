@@ -22,7 +22,21 @@
 ## Estrutura de pastas
 src/
 ├── app/                          # App Router (paginas)
-│   ├── api/                      # API routes
+│   ├── api/                      # API routes (cada rota tem route.ts + route.spec.ts)
+│   │   ├── entrada/
+│   │   │   └── preparar/
+│   │   │       ├── route.ts
+│   │   │       └── route.spec.ts
+│   │   ├── confirmar/
+│   │   │   ├── route.ts
+│   │   │   └── route.spec.ts
+│   │   ├── saida/
+│   │   │   ├── route.ts
+│   │   │   └── route.spec.ts
+│   │   └── admin/
+│   │       └── login/
+│   │           ├── route.ts
+│   │           └── route.spec.ts
 │   ├── entrada/                  # Tela inicial com QR code via SSE
 │   ├── saida/                    # Pagina saida (input token)
 │   └── admin/                    # Painel admin (login, dashboard, CRUD vagas, historico)
@@ -79,6 +93,36 @@ Interfaces definem contratos p/ operacoes DB. Use cases dependem das interfaces,
 ## Dados seed
 Vagas fixas com codes numericos (1, 2, 3... N). N definido em config. Todas iguais (sem tipo).
 
+## API Routes
+- Cada endpoint tem `route.ts` + `route.spec.ts` no mesmo diretorio, mesmo nivel
+- Handler instancia use case com repositorios conectados a `getDb()` (producao)
+- Tratamento explicito de erros: mapear `instanceof` de erros do use case p/ status HTTP
+- Nunca expor stack trace ou detalhes internos nas respostas de erro
+- `route.spec.ts` usa `vi.mock("@/lib/db")` p/ injetar `:memory:` no handler
+  - Cada spec cria `Database(":memory:")` + roda `migrate()` no `beforeEach`
+  - Seed com `db.insert()` direto no body do teste
+- Toda criacao, alteracao ou delecao de rota exige documentacao no README.md
+
+## Documentacao (README.md)
+- README.md contem secao `## API Routes` com todas as rotas documentadas
+- Cada rota documenta: metodo HTTP, path, descricao, parametros (query/body), formato exato da resposta (200, 4xx, 5xx)
+- Exemplo de formato:
+  ```md
+  ### `GET /api/entrada/preparar`
+  Prepara uma nova entrada: busca vaga disponivel e gera token UUID.
+
+  **Resposta 200:**
+  ```json
+  { "spot": { "id": 1, "code": 1, "status": "disponivel" }, "token": "uuid" }
+  ```
+
+  **Resposta 503:**
+  ```json
+  { "error": "Nenhuma vaga disponivel no momento" }
+  ```
+  ```
+- Toda alteracao em rotas deve atualizar esta secao
+
 ## Testes
 - Vitest p/ testes unitarios (focus use-cases, por enquanto)
 - Cada use case tem arquivo `.spec.ts` no mesmo nivel, mesmo nome
@@ -90,6 +134,14 @@ Vagas fixas com codes numericos (1, 2, 3... N). N definido em config. Todas igua
 - Toda nova feature exige teste(s)
 - Todo bug fix exige teste de regressao
 - `npm test` executa todos; `npm run test:watch` p/ TDD
+- Testes E2E de API routes seguem mesmo padrao: `route.spec.ts` no mesmo nivel de `route.ts`
+  - Usam `vi.mock("@/lib/db")` p/ injetar `:memory:` e chamam o handler diretamente (`GET()`, `POST()`)
+  - Testam status code + corpo da resposta (sucesso e erro)
+- Scripts:
+  - `npm test` — todos os testes
+  - `npm run test:unit` — apenas `src/lib/use-cases`
+  - `npm run test:e2e` — apenas `src/app/api`
+  - `npm run test:watch` — watch mode
 
 ## Clean Code practices
 - Single Responsibility: cada funcao/arquivo tem 1 proposito claro

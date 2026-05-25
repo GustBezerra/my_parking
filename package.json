@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "test:unit": "vitest run src/lib/use-cases",
+    "test:e2e": "vitest run src/app/api",
     "test:watch": "vitest"
   },
   "dependencies": {
