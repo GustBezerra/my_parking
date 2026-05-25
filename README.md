@@ -83,15 +83,15 @@ O sistema utilizará um banco de dados para armazenar todas as informações nec
 
 - HTML
 - CSS
-- JavaScript
+- JavaScript + React/Next.js
 
 ### Back-end
 
-- PHP
+- Next.js
 
 ### Banco de Dados
 
-- MySQL
+- Supabase
 
 ### Recursos adicionais
 
@@ -117,9 +117,9 @@ O sistema utilizará um banco de dados para armazenar todas as informações nec
 
 Projeto desenvolvido para fins acadêmicos e práticos por estudantes do curso de Ciência da Computação.
 
-<br>
+---
 
-<footer align="center", style="background-color: #F2F0EF; padding: 4px;">
+<footer align="center">
 
 <h5>“Nosso objetivo é resolver os problemas do estacionamento da faculdade, os do resto do mundo ficam para a próxima versão.” 🌟</h5>
 
