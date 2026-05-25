@@ -30,7 +30,16 @@ src/
 │   ├── db/                       # Drizzle client setup + schema
 │   ├── repositories/             # Interfaces + sqlite/ impl
 │   │   └── supabase/             # (futuro) mesma interface, novo cliente
-│   ├── use-cases/                # Regras negocio (entrada, saida, QR, auth, vaga)
+│   ├── use-cases/                # Regras negocio + testes
+│   │   ├── prepare-entry.ts
+│   │   ├── prepare-entry.spec.ts # ← teste (mesmo nivel, mesmo nome)
+│   │   ├── confirm-entry.ts
+│   │   ├── confirm-entry.spec.ts
+│   │   ├── process-exit.ts
+│   │   ├── process-exit.spec.ts
+│   │   ├── admin-login.ts
+│   │   ├── admin-login.spec.ts
+│   │   └── test-helper.ts        # Factory p/ DB :memory: + repos
 │   └── auth/                     # protectRoute() p/ API routes admin
 └── components/                   # Componentes UI (QR display, entrada screen, etc.)
 
@@ -61,8 +70,26 @@ Interfaces definem contratos p/ operacoes DB. Use cases dependem das interfaces,
 - Retorna 401 se token invalido/ausente
 - Pagina admin redireciona p/ /admin/login se 401
 
+## Migrations
+- Geradas via `drizzle-kit generate` — nunca escrever SQL manual p/ schema
+- Aplicadas com `drizzle-orm/better-sqlite3/migrator` (inclusive em testes)
+- Proibido: ler arquivos `.sql` com `fs`/`path`, fazer parse manual de SQL, ou executar statements raw
+- `test-helper.ts` usa `migrate(db, { migrationsFolder: './drizzle' })` p/ manter `:memory:` sincronizado
+
 ## Dados seed
 Vagas fixas com codes numericos (1, 2, 3... N). N definido em config. Todas iguais (sem tipo).
+
+## Testes
+- Vitest p/ testes unitarios (focus use-cases, por enquanto)
+- Cada use case tem arquivo `.spec.ts` no mesmo nivel, mesmo nome
+  - Ex: `prepare-entry.ts` ⇄ `prepare-entry.spec.ts`
+- Testes usam `createTestRepos()` do `test-helper.ts` p/ isolar cenario
+- Cada suite de testes cria **todas** as entidades que precisa (arrange completo)
+  - Nada compartilhado entre suites — cada uma roda com DB `:memory:` proprio
+- `test-helper.ts`: `createTestRepos()` abre `:memory:`, aplica migrations com `migrate()` do drizzle, retorna repos prontos
+- Toda nova feature exige teste(s)
+- Todo bug fix exige teste de regressao
+- `npm test` executa todos; `npm run test:watch` p/ TDD
 
 ## Clean Code practices
 - Single Responsibility: cada funcao/arquivo tem 1 proposito claro
