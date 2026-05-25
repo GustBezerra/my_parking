@@ -30,15 +30,15 @@ src/
 │   ├── db/                       # Drizzle client setup + schema
 │   ├── repositories/             # Interfaces + sqlite/ impl
 │   │   └── supabase/             # (futuro) mesma interface, novo cliente
-│   ├── services/                 # Regras negocio (entrada, saida, QR, auth, vaga)
+│   ├── use-cases/                # Regras negocio (entrada, saida, QR, auth, vaga)
 │   └── auth/                     # protectRoute() p/ API routes admin
 └── components/                   # Componentes UI (QR display, entrada screen, etc.)
 
 ## Repository pattern
-Interfaces definem contratos p/ operacoes DB. Services dependem das interfaces, nunca da implementacao. Troca SQLite ↔ Supabase muda so injecao; services intactos.
+Interfaces definem contratos p/ operacoes DB. Use cases dependem das interfaces, nunca da implementacao. Troca SQLite ↔ Supabase muda so injecao; use cases intactos.
 
 ## Fluxo entrada
-1. Tela inicial carrega → service busca vaga disponivel de menor code → gera novo token UUID → gera QR com esse token → exibe QR
+1. Tela inicial carrega → use case busca vaga disponivel de menor code → gera novo token UUID → gera QR com esse token → exibe QR
 2. Visitante escaneia QR com celular → abre URL /entrada/confirmar?token=<uuid>
 3. API route: busca entry pelo token (nao existe ainda, é o primeiro uso) → cria entry com spot_id + token + entry_time=now → marca spot ocupada → retorna pagina com QR (mesmo token) p/ visitante salvar
 4. API route emite SSE vaga_ocupada contendo dados da proxima vaga disponivel + seu QR ja gerado
