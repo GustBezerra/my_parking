@@ -1,12 +1,19 @@
 import { eq, and, isNull, desc } from "drizzle-orm";
+import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
-import { db } from "@/lib/db";
 import { entries } from "@/lib/db/schema";
 import type { EntriesRepository, Entry, CreateEntryData } from "../entries";
+import type * as schema from "@/lib/db/schema";
 
 export class SqliteEntriesRepository implements EntriesRepository {
+  private db: BetterSQLite3Database<typeof schema>;
+
+  constructor(database: BetterSQLite3Database<typeof schema>) {
+    this.db = database;
+  }
+
   async findByToken(token: string): Promise<Entry | undefined> {
-    const rows = await db
+    const rows = await this.db
       .select()
       .from(entries)
       .where(eq(entries.token, token))
@@ -16,7 +23,7 @@ export class SqliteEntriesRepository implements EntriesRepository {
   }
 
   async create(data: CreateEntryData): Promise<Entry> {
-    const rows = await db
+    const rows = await this.db
       .insert(entries)
       .values(data)
       .returning();
@@ -25,14 +32,14 @@ export class SqliteEntriesRepository implements EntriesRepository {
   }
 
   async updateExitTime(id: number, exitTime: string): Promise<void> {
-    await db
+    await this.db
       .update(entries)
       .set({ exitTime })
       .where(eq(entries.id, id));
   }
 
   async findActiveBySpotId(spotId: number): Promise<Entry | undefined> {
-    const rows = await db
+    const rows = await this.db
       .select()
       .from(entries)
       .where(
@@ -47,7 +54,7 @@ export class SqliteEntriesRepository implements EntriesRepository {
   }
 
   async findAll(): Promise<Entry[]> {
-    const rows = await db
+    const rows = await this.db
       .select()
       .from(entries)
       .orderBy(desc(entries.entryTime));
