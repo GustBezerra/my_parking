@@ -113,6 +113,100 @@ O sistema utilizará um banco de dados para armazenar todas as informações nec
 
 ---
 
+## 🌐 API Routes
+
+### `GET /api/sse/entrada`
+SSE endpoint que envia QR codes em tempo real para a tela de entrada.
+
+Mantém conexão SSE aberta. A cada escaneamento de QR Code, envia a próxima vaga disponível com QR já gerado. O QR code na tela de entrada codifica `/entrada/confirmar?token=<uuid>`.
+
+**Headers:** `Content-Type: text/event-stream`, `Cache-Control: no-cache`, `Connection: keep-alive`
+
+**Eventos:**
+
+| Evento | Payload | Descrição |
+|--------|---------|-----------|
+| `vaga_ocupada` | `{ spot, token, qrDataUrl }` | Vaga disponível com QR code (data URI) |
+| `error` | `{ error }` | Nenhuma vaga disponível no momento |
+
+**Resposta 200 (evento `vaga_ocupada`):**
+```json
+{ "spot": { "id": 1, "code": 1, "status": "disponivel" }, "token": "uuid", "qrDataUrl": "data:image/png;base64,..." }
+```
+
+**Resposta 200 (evento `error`):**
+```json
+{ "error": "Nao ha vagas disponiveis no momento" }
+```
+
+---
+
+### `GET /api/confirmar?token=<uuid>`
+Confirma a entrada do veículo após escaneamento do QR Code.
+
+Cria o registro de entrada no banco, marca a vaga como ocupada e dispara evento SSE para gerar novo QR.
+
+**Parâmetros query:**
+
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `token` | string | Sim | Token UUID único da sessão |
+
+**Resposta 200:**
+```json
+{ "entry": { "id": 1, "spotId": 1, "token": "uuid", "entryTime": "2025-01-01T00:00:00.000Z", "exitTime": null } }
+```
+
+**Resposta 400:**
+```json
+{ "error": "Token é obrigatório" }
+```
+
+**Resposta 409:**
+```json
+{ "error": "Este token ja foi utilizado" }
+```
+
+**Resposta 503:**
+```json
+{ "error": "Nenhuma vaga disponivel no momento" }
+```
+
+---
+
+### `GET /api/saida?token=<uuid>`
+Registra a saída do veículo. Libera a vaga e marca exit_time na entrada.
+
+**Parâmetros query:**
+
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `token` | string | Sim | Token UUID da sessão (mesmo do QR de saída) |
+
+**Resposta 200:**
+```json
+{ "entry": { "id": 1, "spotId": 1, "token": "uuid", "entryTime": "2025-01-01T00:00:00.000Z", "exitTime": "2025-01-01T12:00:00.000Z" } }
+```
+
+**Resposta 400:**
+```json
+{ "error": "Token é obrigatório" }
+```
+
+**Resposta 404:**
+```json
+{ "error": "Token invalido ou saida ja processada" }
+```
+
+---
+
+### `GET /entrada/confirmar?token=<uuid>` (Página)
+Página que o visitante acessa ao escanear o QR Code na entrada.
+
+Faz fetch para `/api/confirmar?token=<uuid>` e, em caso de sucesso, exibe um QR Code de saída para o visitante guardar.
+
+---
+
 ## 👨‍💻 Equipe de Desenvolvimento
 
 Projeto desenvolvido para fins acadêmicos e práticos por estudantes do curso de Ciência da Computação.
