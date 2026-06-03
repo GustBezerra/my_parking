@@ -18,9 +18,11 @@
     "drizzle-orm": "^0.45.2",
     "jose": "^6.2.3",
     "next": "16.2.6",
+    "next-swagger-doc": "^0.4.1",
     "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "swagger-ui-react": "^5.32.6",
     "use-next-sse": "^1.0.2"
   },
   "devDependencies": {
@@ -30,6 +32,7 @@
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/swagger-ui-react": "^5.18.0",
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
