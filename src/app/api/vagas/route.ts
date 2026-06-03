@@ -2,20 +2,17 @@ import { NextResponse } from "next/server";
 
 import { getDb } from "@/lib/db";
 import { SqliteParkingSpotsRepository } from "@/lib/repositories/sqlite/parking-spots";
+import { GetAllSpotsUseCase } from "@/lib/use-cases/get-all-spots";
 
 export async function GET() {
   try {
     const db = getDb();
+    const repo = new SqliteParkingSpotsRepository(db);
+    const useCase = new GetAllSpotsUseCase(repo);
 
-    const parkingSpotsRepo = new SqliteParkingSpotsRepository(db);
+    const result = await useCase.execute();
 
-    const spots = await parkingSpotsRepo.findAll();
-
-    return NextResponse.json({
-      success: true,
-      total: spots.length,
-      spots,
-    });
+    return NextResponse.json({ success: true, ...result });
   } catch (error) {
     console.error(error);
 
