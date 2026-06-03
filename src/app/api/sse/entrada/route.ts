@@ -1,11 +1,7 @@
 import { createSSEHandler } from "use-next-sse";
 import QRCode from "qrcode";
-import { getDb } from "@/lib/db";
-import { SqliteParkingSpotsRepository } from "@/lib/repositories/sqlite/parking-spots";
-import {
-  PrepareEntryUseCase,
-  NoAvailableSpotsError,
-} from "@/lib/use-cases/prepare-entry";
+import { createPrepareEntryUseCase } from "@/lib/use-cases/factory";
+import { NoAvailableSpotsError } from "@/lib/use-cases/prepare-entry";
 import { entradaEventEmitter, ENTRADA_EVENT } from "@/lib/sse/entrada-emitter";
 import { BASE_URL } from "@/lib/constants";
 
@@ -18,9 +14,7 @@ export const GET = createSSEHandler((send, close, { onClose }) => {
     closed = true;
   });
 
-  const db = getDb();
-  const parkingSpotsRepo = new SqliteParkingSpotsRepository(db);
-  const prepareEntry = new PrepareEntryUseCase(parkingSpotsRepo);
+  const prepareEntry = createPrepareEntryUseCase();
 
   const run = async () => {
     try {

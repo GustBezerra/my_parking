@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
-import { SqliteParkingSpotsRepository } from "@/lib/repositories/sqlite/parking-spots";
-import { SqliteEntriesRepository } from "@/lib/repositories/sqlite/entries";
+import { createConfirmEntryUseCase } from "@/lib/use-cases/factory";
 import {
-  ConfirmEntryUseCase,
   DuplicateTokenError,
   NoAvailableSpotsError,
 } from "@/lib/use-cases/confirm-entry";
@@ -19,10 +16,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const db = getDb();
-  const parkingSpotsRepo = new SqliteParkingSpotsRepository(db);
-  const entriesRepo = new SqliteEntriesRepository(db);
-  const confirmEntry = new ConfirmEntryUseCase(parkingSpotsRepo, entriesRepo);
+  const confirmEntry = createConfirmEntryUseCase();
 
   try {
     const entry = await confirmEntry.execute(token);
