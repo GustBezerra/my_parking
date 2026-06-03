@@ -23,49 +23,63 @@
 src/
 ├── app/                          # App Router (paginas)
 │   ├── api/                      # API routes (cada rota tem route.ts + route.spec.ts)
-│   │   ├── entrada/
-│   │   │   └── preparar/
-│   │   │       ├── route.ts
-│   │   │       └── route.spec.ts
 │   │   ├── confirmar/
 │   │   │   ├── route.ts
 │   │   │   └── route.spec.ts
 │   │   ├── saida/
 │   │   │   ├── route.ts
 │   │   │   └── route.spec.ts
+│   │   ├── sse/
+│   │   │   └── entrada/           # SSE endpoint (substitui entrada/preparar REST)
+│   │   │       ├── route.ts
+│   │   │       └── route.spec.ts
+│   │   ├── vagas/
+│   │   │   ├── route.ts
+│   │   │   └── route.spec.ts
 │   │   └── admin/
 │   │       └── login/
 │   │           ├── route.ts
 │   │           └── route.spec.ts
-│   ├── entrada/                  # Tela inicial com QR code via SSE
-│   ├── saida/                    # Pagina saida (input token)
-│   └── admin/                    # Painel admin (login, dashboard, CRUD vagas, historico)
+│   ├── entrada/                   # Tela inicial com QR code via SSE
+│   │   └── confirmar/             # Pagina apos escanear QR
+│   ├── saida/                     # (planejado) Pagina saida (input token)
+│   └── admin/                     # (planejado) Painel admin (dashboard, CRUD, historico)
 ├── lib/
-│   ├── db/                       # Drizzle client setup + schema
-│   ├── repositories/             # Interfaces + sqlite/ impl
-│   │   └── supabase/             # (futuro) mesma interface, novo cliente
-│   ├── use-cases/                # Regras negocio + testes
+│   ├── constants.ts               # Config (BASE_URL, TOTAL_SPOTS, etc.)
+│   ├── db/                        # Drizzle client setup + schema
+│   ├── repositories/              # Interfaces + sqlite/ impl
+│   │   └── supabase/              # (futuro) mesma interface, novo cliente
+│   ├── sse/
+│   │   └── entrada-emitter.ts     # EventEmitter p/ SSE entrada
+│   ├── use-cases/                 # Regras negocio + testes
 │   │   ├── prepare-entry.ts
-│   │   ├── prepare-entry.spec.ts # ← teste (mesmo nivel, mesmo nome)
+│   │   ├── prepare-entry.spec.ts
 │   │   ├── confirm-entry.ts
 │   │   ├── confirm-entry.spec.ts
 │   │   ├── process-exit.ts
 │   │   ├── process-exit.spec.ts
+│   │   ├── get-all-spots.ts
+│   │   ├── get-all-spots.spec.ts
+│   │   ├── factory.ts             # Cria use cases com repos injetados
+│   │   ├── test-helper.ts         # Factory p/ DB :memory: + repos
 │   │   ├── admin-login.ts
-│   │   ├── admin-login.spec.ts
-│   │   └── test-helper.ts        # Factory p/ DB :memory: + repos
-│   └── auth/                     # protectRoute() p/ API routes admin
-└── components/                   # Componentes UI (QR display, entrada screen, etc.)
+│   │   └── admin-login.spec.ts
+│   └── auth/
+│       └── index.ts               # protectRoute() p/ API routes admin
+└── components/                    # Componentes UI
 
 ## Repository pattern
 Interfaces definem contratos p/ operacoes DB. Use cases dependem das interfaces, nunca da implementacao. Troca SQLite ↔ Supabase muda so injecao; use cases intactos.
 
-## Fluxo entrada
-1. Tela inicial carrega → use case busca vaga disponivel de menor code → gera novo token UUID → gera QR com esse token → exibe QR
-2. Visitante escaneia QR com celular → abre URL /entrada/confirmar?token=<uuid>
-3. API route: busca entry pelo token (nao existe ainda, é o primeiro uso) → cria entry com spot_id + token + entry_time=now → marca spot ocupada → retorna pagina com QR (mesmo token) p/ visitante salvar
-4. API route emite SSE vaga_ocupada contendo dados da proxima vaga disponivel + seu QR ja gerado
-5. Tela inicial recebe SSE → exibe novo QR → ciclo
+### Factory pattern
+Use cases nunca sao instanciados diretamente nas rotas. `src/lib/use-cases/factory.ts` expoe funcoes `createXxxUseCase()` que cuidam da injecao de dependencias. Toda nova rota deve usar a factory — proibido instanciar repos ou use cases diretamente no handler. Troca SQLite → Supabase requer alterar so `factory.ts`.
+
+## Fluxo entrada (SSE-based)
+1. Tela inicial conecta `GET /api/sse/entrada` (SSE). Servidor executa `PrepareEntryUseCase`: busca vaga de menor code → gera token UUID → gera QR codificando `/entrada/confirmar?token=<uuid>` → envia evento `vaga_ocupada` com `{ spot, token, qrDataUrl }`.
+2. Visitante escaneia QR → abre `/entrada/confirmar?token=<uuid>`.
+3. Pagina `/entrada/confirmar` faz `GET /api/confirmar?token=<uuid>` → cria entry + marca spot ocupada → retorna QR (mesmo token) p/ visitante salvar.
+4. `GET /api/confirmar` emite SSE `vaga_ocupada` via `entrada-emitter.ts` → servidor SSE gera nova vaga → ciclo.
+5. Nao existe rota REST `/api/entrada/preparar` — preparacao ocorre dentro do SSE handler.
 
 ## Fluxo saida
 1. Visitante chega saida, acessa /saida com token (do QR salvo no celular)
@@ -74,13 +88,17 @@ Interfaces definem contratos p/ operacoes DB. Use cases dependem das interfaces,
 
 ## Server-Sent Events (SSE)
 - use-next-sse p/ SSE unidirecional servidor → tela entrada
-- Unico evento: vaga_ocupada — payload contem dados da vaga que ocupou + QR ja gerado p/ proxima vaga
-- useSSE hook no client: ao receber vaga_ocupada, renderiza novo QR
+- Rota: `GET /api/sse/entrada` — cria conexao SSE, prepara entrada, envia evento, aguarda proximo
+- `src/lib/sse/entrada-emitter.ts` — EventEmitter singleton p/ `GET /api/confirmar` notificar SSE apos escaneamento
+- Unico evento: `vaga_ocupada` — payload `{ spot, token, qrDataUrl }`
+- Evento de erro: `error` — payload `{ error }` (sem vagas)
+- useSSE hook no client: ao receber `vaga_ocupada`, renderiza novo QR
 - Reconexao automatica configurada
 
 ## Auth
 - Admin login via JWT em cookie httpOnly
-- protectRoute() chamada em cada API route admin
+- `src/lib/auth/index.ts` exporta `protectRoute(request)` — verifica JWT no cookie `auth_token`, retorna `NextResponse` (401) ou `null` (autorizado)
+- Usada em rotas protegidas (`GET /api/vagas`, futuras rotas admin)
 - Retorna 401 se token invalido/ausente
 - Pagina admin redireciona p/ /admin/login se 401
 
@@ -95,7 +113,7 @@ Vagas fixas com codes numericos (1, 2, 3... N). N definido em config. Todas igua
 
 ## API Routes
 - Cada endpoint tem `route.ts` + `route.spec.ts` no mesmo diretorio, mesmo nivel
-- Handler instancia use case com repositorios conectados a `getDb()` (producao)
+- Handler usa funcao factory de `src/lib/use-cases/factory.ts` — nunca instancia repos ou use cases diretamente
 - Tratamento explicito de erros: mapear `instanceof` de erros do use case p/ status HTTP
 - Nunca expor stack trace ou detalhes internos nas respostas de erro
 - `route.spec.ts` usa `vi.mock("@/lib/db")` p/ injetar `:memory:` no handler
@@ -106,19 +124,19 @@ Vagas fixas com codes numericos (1, 2, 3... N). N definido em config. Todas igua
 ## Documentacao (README.md)
 - README.md contem secao `## API Routes` com todas as rotas documentadas
 - Cada rota documenta: metodo HTTP, path, descricao, parametros (query/body), formato exato da resposta (200, 4xx, 5xx)
-- Exemplo de formato:
+  - Exemplo de formato:
   ```md
-  ### `GET /api/entrada/preparar`
-  Prepara uma nova entrada: busca vaga disponivel e gera token UUID.
+  ### `GET /api/vagas`
+  Retorna todas as vagas com código e status.
 
   **Resposta 200:**
   ```json
-  { "spot": { "id": 1, "code": 1, "status": "disponivel" }, "token": "uuid" }
+  { "success": true, "total": 3, "spots": [{ "id": 1, "code": 1, "status": "disponivel" }] }
   ```
 
-  **Resposta 503:**
+  **Resposta 500:**
   ```json
-  { "error": "Nenhuma vaga disponivel no momento" }
+  { "success": false, "error": "Erro ao buscar vagas" }
   ```
   ```
 - Toda alteracao em rotas deve atualizar esta secao
