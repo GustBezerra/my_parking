@@ -1,0 +1,61 @@
+body {
+  background: #fafafa;
+}
+
+.swagger-docs-page {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  background: #fafafa;
+  min-height: 100vh;
+}
+
+.swagger-docs-header {
+  margin-bottom: 2rem;
+}
+
+.swagger-docs-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+}
+
+.swagger-docs-header p {
+  color: #555;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+.swagger-docs-page .swagger-ui {
+  background: #fff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.swagger-docs-page .swagger-ui .topbar {
+  display: none;
+}
+
+.swagger-docs-page .swagger-ui .info {
+  margin: 0;
+  padding: 1.5rem;
+}
+
+.swagger-docs-page .swagger-ui .info .title {
+  color: #1a1a1a;
+  font-size: 1.75rem;
+}
+
+.swagger-docs-page .swagger-ui .scheme-container {
+  background: #f5f5f5;
+  box-shadow: none;
+  padding: 1rem 1.5rem;
+}
+
+.swagger-docs-page .swagger-ui input[type="text"],
+.swagger-docs-page .swagger-ui input[type="search"],
+.swagger-docs-page .swagger-ui textarea,
+.swagger-docs-page .swagger-ui select {
+  color: #1a1a1a;
+}
