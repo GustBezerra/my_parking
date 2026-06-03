@@ -1,4 +1,4 @@
-import { eq, asc } from "drizzle-orm";
+import { eq, asc, sql } from "drizzle-orm";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
 import { parkingSpots } from "@/lib/db/schema";
@@ -40,6 +40,24 @@ export class SqliteParkingSpotsRepository implements ParkingSpotsRepository {
       .limit(1);
 
     return rows[0];
+  }
+
+  async findAllOccupied(): Promise<ParkingSpot[]> {
+    const rows = await this.db
+      .select()
+      .from(parkingSpots)
+      .where(eq(parkingSpots.status, "ocupada"))
+      .orderBy(asc(parkingSpots.code));
+
+    return rows;
+  }
+
+  async count(): Promise<number> {
+    const rows = await this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(parkingSpots);
+
+    return rows[0].count;
   }
 
   async updateStatus(id: number, status: "disponivel" | "ocupada"): Promise<void> {
