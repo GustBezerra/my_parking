@@ -6,6 +6,7 @@ import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import * as schema from "@/lib/db/schema";
 import { parkingSpots, entries } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { BASE_URL } from "@/lib/constants";
 
 vi.mock("@/lib/db");
 
@@ -25,7 +26,7 @@ describe("GET /api/confirmar", () => {
   });
 
   it("returns 400 when token is missing", async () => {
-    const request = new NextRequest("http://localhost:3000/api/confirmar");
+    const request = new NextRequest(`${BASE_URL}/api/confirmar`);
     const response = await GET(request);
 
     expect(response.status).toBe(400);
@@ -35,7 +36,7 @@ describe("GET /api/confirmar", () => {
 
   it("returns 200 with entry on successful confirmation", async () => {
     const request = new NextRequest(
-      new URL("http://localhost:3000/api/confirmar?token=valid-token"),
+      new URL("/api/confirmar?token=valid-token", BASE_URL),
     );
     const response = await GET(request);
 
@@ -57,7 +58,7 @@ describe("GET /api/confirmar", () => {
       .run();
 
     const request = new NextRequest(
-      new URL("http://localhost:3000/api/confirmar?token=used-token"),
+      new URL("/api/confirmar?token=used-token", BASE_URL),
     );
     const response = await GET(request);
 
@@ -74,7 +75,7 @@ describe("GET /api/confirmar", () => {
       .run();
 
     const request = new NextRequest(
-      new URL("http://localhost:3000/api/confirmar?token=new-token"),
+      new URL("/api/confirmar?token=new-token", BASE_URL),
     );
     const response = await GET(request);
 
