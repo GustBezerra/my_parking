@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:unit": "vitest run src/lib/use-cases",
     "test:e2e": "vitest run src/app/api",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "seed": "npx tsx src/lib/seed.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
