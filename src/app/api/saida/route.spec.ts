@@ -6,6 +6,7 @@ import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import * as schema from "@/lib/db/schema";
 import { parkingSpots, entries } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { BASE_URL } from "@/lib/constants";
 
 vi.mock("@/lib/db");
 
@@ -33,7 +34,7 @@ describe("GET /api/saida", () => {
   });
 
   it("returns 400 when token is missing", async () => {
-    const request = new NextRequest("http://localhost:3000/api/saida");
+    const request = new NextRequest(`${BASE_URL}/api/saida`);
     const response = await GET(request);
 
     expect(response.status).toBe(400);
@@ -43,7 +44,7 @@ describe("GET /api/saida", () => {
 
   it("returns 200 with exit data on success", async () => {
     const request = new NextRequest(
-      new URL("http://localhost:3000/api/saida?token=active-token"),
+      new URL("/api/saida?token=active-token", BASE_URL),
     );
     const response = await GET(request);
 
@@ -59,7 +60,7 @@ describe("GET /api/saida", () => {
     const repo = new SqliteParkingSpotsRepository(db);
 
     const request = new NextRequest(
-      new URL("http://localhost:3000/api/saida?token=active-token"),
+      new URL("/api/saida?token=active-token", BASE_URL),
     );
     await GET(request);
 
@@ -69,7 +70,7 @@ describe("GET /api/saida", () => {
 
   it("returns 404 for nonexistent token", async () => {
     const request = new NextRequest(
-      new URL("http://localhost:3000/api/saida?token=nonexistent"),
+      new URL("/api/saida?token=nonexistent", BASE_URL),
     );
     const response = await GET(request);
 
@@ -86,7 +87,7 @@ describe("GET /api/saida", () => {
       .run();
 
     const request = new NextRequest(
-      new URL("http://localhost:3000/api/saida?token=active-token"),
+      new URL("/api/saida?token=active-token", BASE_URL),
     );
     const response = await GET(request);
 

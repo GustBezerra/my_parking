@@ -113,6 +113,47 @@ O sistema utilizará um banco de dados para armazenar todas as informações nec
 
 ---
 
+## 🗄️ Configuracao do Banco de Dados
+
+### Usuario admin
+
+O sistema exige um usuario admin na tabela `admin_users` com senha hasheada.
+
+Para gerar uma hash bcrypt no terminal (Node.js):
+```bash
+node -e "console.log(require('bcryptjs').hashSync('sua-senha-aqui', 10))"
+```
+
+SQL de insert:
+```sql
+INSERT INTO admin_users (username, password_hash)
+VALUES ('admin@exemplo.com', '<hash-gerada-acima>');
+```
+
+### Vagas de estacionamento
+
+O sistema exige que as vagas existam na tabela `parking_spots` antes de funcionar.
+Nao ha endpoint de CRUD de vagas — a insercao deve ser feita diretamente no banco.
+
+SQL de insert (exemplo para 10 vagas):
+```sql
+INSERT INTO parking_spots (code, status) VALUES
+(1,  'disponivel'),
+(2,  'disponivel'),
+(3,  'disponivel'),
+(4,  'disponivel'),
+(5,  'disponivel'),
+(6,  'disponivel'),
+(7,  'disponivel'),
+(8,  'disponivel'),
+(9,  'disponivel'),
+(10, 'disponivel');
+```
+
+**Desenvolvimento local:** as migrations do Drizzle ja criam as tabelas. Pode-se inserir os dados seed manualmente ou via script. Producao (Supabase) requer insercao manual ou script de seed.
+
+---
+
 ## 🌐 API Routes
 
 ### `GET /api/sse/entrada`
@@ -142,11 +183,16 @@ Mantém conexão SSE aberta. A cada escaneamento de QR Code, envia a próxima va
 ---
 
 ### `GET /api/vagas`
-Retorna todas as vagas do estacionamento com seus códigos e status.
+Retorna todas as vagas do estacionamento com seus códigos e status. Requer autenticação de administrador via cookie `auth_token`.
 
 **Resposta 200:**
 ```json
 { "success": true, "total": 3, "spots": [{ "id": 1, "code": 1, "status": "disponivel" }, { "id": 2, "code": 2, "status": "ocupada" }, { "id": 3, "code": 3, "status": "disponivel" }] }
+```
+
+**Resposta 401:**
+```json
+{ "error": "Nao autorizado" }
 ```
 
 **Resposta 500:**
@@ -212,6 +258,37 @@ Registra a saída do veículo. Libera a vaga e marca exit_time na entrada.
 ```json
 { "error": "Token invalido ou saida ja processada" }
 ```
+
+---
+
+### `POST /api/admin/login`
+Autentica o administrador com username e senha. Retorna um cookie httpOnly (`auth_token`) com JWT.
+
+**Headers:** `Content-Type: application/json`
+
+**Parâmetros body:**
+
+| Parâmetro | Tipo | Obrigatório | Descrição |
+|-----------|------|-------------|-----------|
+| `username` | string | Sim | Nome de usuário do administrador |
+| `password` | string | Sim | Senha do administrador |
+
+**Resposta 200:**
+```json
+{ "success": true }
+```
+
+**Resposta 400:**
+```json
+{ "error": "Username e senha sao obrigatorios" }
+```
+
+**Resposta 401:**
+```json
+{ "error": "Credenciais invalidas" }
+```
+
+**Cookie setado:** `auth_token` (httpOnly, secure em produção, sameSite lax, path /, maxAge 7 dias)
 
 ---
 

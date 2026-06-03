@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDb } from "@/lib/db";
-import { SqliteParkingSpotsRepository } from "@/lib/repositories/sqlite/parking-spots";
-import { SqliteEntriesRepository } from "@/lib/repositories/sqlite/entries";
-import {
-  ProcessExitUseCase,
-  InvalidTokenError,
-} from "@/lib/use-cases/process-exit";
+import { createProcessExitUseCase } from "@/lib/use-cases/factory";
+import { InvalidTokenError } from "@/lib/use-cases/process-exit";
 
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get("token");
@@ -17,10 +12,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const db = getDb();
-  const parkingSpotsRepo = new SqliteParkingSpotsRepository(db);
-  const entriesRepo = new SqliteEntriesRepository(db);
-  const processExit = new ProcessExitUseCase(parkingSpotsRepo, entriesRepo);
+  const processExit = createProcessExitUseCase();
 
   try {
     const entry = await processExit.execute(token);

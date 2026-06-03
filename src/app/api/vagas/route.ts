@@ -1,15 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { createGetAllSpotsUseCase } from "@/lib/use-cases/factory";
+import { protectRoute } from "@/lib/auth";
 
-import { getDb } from "@/lib/db";
-import { SqliteParkingSpotsRepository } from "@/lib/repositories/sqlite/parking-spots";
-import { GetAllSpotsUseCase } from "@/lib/use-cases/get-all-spots";
+export async function GET(request: NextRequest) {
+  const authResponse = await protectRoute(request);
+  if (authResponse) return authResponse;
 
-export async function GET() {
   try {
-    const db = getDb();
-    const repo = new SqliteParkingSpotsRepository(db);
-    const useCase = new GetAllSpotsUseCase(repo);
-
+    const useCase = createGetAllSpotsUseCase();
     const result = await useCase.execute();
 
     return NextResponse.json({ success: true, ...result });
@@ -17,13 +15,8 @@ export async function GET() {
     console.error(error);
 
     return NextResponse.json(
-      {
-        success: false,
-        error: "Erro ao buscar vagas",
-      },
-      {
-        status: 500,
-      },
+      { success: false, error: "Erro ao buscar vagas" },
+      { status: 500 },
     );
   }
 }
