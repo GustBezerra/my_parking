@@ -141,6 +141,21 @@ Mantém conexão SSE aberta. A cada escaneamento de QR Code, envia a próxima va
 
 ---
 
+### `GET /api/vagas`
+Retorna todas as vagas do estacionamento com seus códigos e status.
+
+**Resposta 200:**
+```json
+{ "success": true, "total": 3, "spots": [{ "id": 1, "code": 1, "status": "disponivel" }, { "id": 2, "code": 2, "status": "ocupada" }, { "id": 3, "code": 3, "status": "disponivel" }] }
+```
+
+**Resposta 500:**
+```json
+{ "success": false, "error": "Erro ao buscar vagas" }
+```
+
+---
+
 ### `GET /api/confirmar?token=<uuid>`
 Confirma a entrada do veículo após escaneamento do QR Code.
 
