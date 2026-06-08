@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
+import styles from "./page.module.css";
 
 type PageState =
   | { status: "loading" }
@@ -18,7 +19,13 @@ function ConfirmarContent() {
 
   useEffect(() => {
     if (!token) {
-      setState({ status: "error", message: "Token ausente" });
+      queueMicrotask(() => {
+        setState({
+          status: "error",
+          message: "Token ausente",
+        });
+      });
+
       return;
     }
 
@@ -30,22 +37,29 @@ function ConfirmarContent() {
           const body = await res.json();
           throw new Error(body.error || "Erro ao confirmar entrada");
         }
+
         return res.json();
       })
       .then(async ({ entry }) => {
         if (cancelled) return;
-        const saidaUrl = `/api/saida?token=${token}`;
+        const saidaUrl = `${window.location.origin}/api/saida?token=${token}`;
         const saidaQrUrl = await QRCode.toDataURL(saidaUrl);
         if (cancelled) return;
+
         setState({
           status: "success",
           spotCode: entry.spotId,
           saidaQrUrl,
         });
       })
+
       .catch((err: Error) => {
         if (cancelled) return;
-        setState({ status: "error", message: err.message });
+
+        setState({
+          status: "error",
+          message: err.message,
+        });
       });
 
     return () => {
@@ -55,7 +69,7 @@ function ConfirmarContent() {
 
   if (state.status === "loading") {
     return (
-      <div style={{ textAlign: "center", padding: "2rem" }}>
+      <div className={styles.container}>
         <p>Processando entrada...</p>
       </div>
     );
@@ -63,7 +77,7 @@ function ConfirmarContent() {
 
   if (state.status === "error") {
     return (
-      <div style={{ textAlign: "center", padding: "2rem" }}>
+      <div className={styles.container}>
         <h1>Erro</h1>
         <p>{state.message}</p>
       </div>
@@ -71,13 +85,13 @@ function ConfirmarContent() {
   }
 
   return (
-    <div style={{ textAlign: "center", padding: "2rem" }}>
+    <div className={styles.container}>
       <h1>Vaga {state.spotCode} reservada!</h1>
       <p>Guarde este QR Code para usar na saída.</p>
       <img
         src={state.saidaQrUrl}
         alt="QR Code de saída"
-        style={{ maxWidth: "300px", width: "100%" }}
+        className={styles.qrImage}
       />
       <p>
         <small>Token: {token}</small>
@@ -88,7 +102,7 @@ function ConfirmarContent() {
 
 export default function ConfirmarPage() {
   return (
-    <Suspense fallback={<div style={{ textAlign: "center", padding: "2rem" }}>Carregando...</div>}>
+    <Suspense fallback={<div className={styles.container}>Carregando...</div>}>
       <ConfirmarContent />
     </Suspense>
   );

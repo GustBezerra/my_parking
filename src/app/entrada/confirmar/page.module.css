@@ -1,0 +1,51 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  padding: 20px;
+}
+
+.card {
+  width: 100%;
+  max-width: 700px;
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.title {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.message {
+  font-size: 1.1rem;
+  color: #374151;
+  margin-bottom: 25px;
+}
+
+.qrImage {
+  width: 320px;
+  max-width: 100%;
+  margin: 20px auto;
+}
+
+.token {
+  margin-top: 20px;
+  color: #6b7280;
+  font-size: 0.85rem;
+  word-break: break-word;
+}
+
+.error {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.loading {
+  color: #374151;
+}
