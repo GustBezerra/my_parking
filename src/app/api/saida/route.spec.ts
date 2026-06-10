@@ -30,7 +30,7 @@ describe("GET /api/saida", () => {
       })
       .run();
 
-    vi.mocked(getDb).mockReturnValue(db);
+    vi.mocked(getDb).mockReturnValue({ dialect: "sqlite", db });
   });
 
   it("returns 400 when token is missing", async () => {
@@ -56,7 +56,7 @@ describe("GET /api/saida", () => {
   });
 
   it("frees the spot after successful exit", async () => {
-    const db = vi.mocked(getDb)();
+    const { db } = vi.mocked(getDb)();
     const repo = new SqliteParkingSpotsRepository(db);
 
     const request = new NextRequest(
@@ -80,7 +80,7 @@ describe("GET /api/saida", () => {
   });
 
   it("returns 404 for already exited token", async () => {
-    const db = vi.mocked(getDb)();
+    const { db } = vi.mocked(getDb)();
     db.update(entries)
       .set({ exitTime: new Date().toISOString() })
       .where(eq(entries.token, "active-token"))

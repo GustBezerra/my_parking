@@ -22,7 +22,7 @@ describe("GET /api/confirmar", () => {
 
     db.insert(parkingSpots).values({ code: 1, status: "disponivel" }).run();
 
-    vi.mocked(getDb).mockReturnValue(db);
+    vi.mocked(getDb).mockReturnValue({ dialect: "sqlite", db });
   });
 
   it("returns 400 when token is missing", async () => {
@@ -48,7 +48,7 @@ describe("GET /api/confirmar", () => {
   });
 
   it("returns 409 when token already used", async () => {
-    const db = vi.mocked(getDb)();
+    const { db } = vi.mocked(getDb)();
     db.insert(entries)
       .values({
         spotId: 1,
@@ -68,7 +68,7 @@ describe("GET /api/confirmar", () => {
   });
 
   it("returns 503 when no spots available", async () => {
-    const db = vi.mocked(getDb)();
+    const { db } = vi.mocked(getDb)();
     db.update(parkingSpots)
       .set({ status: "ocupada" })
       .where(eq(parkingSpots.id, 1))

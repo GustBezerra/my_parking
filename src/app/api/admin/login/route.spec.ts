@@ -28,7 +28,7 @@ describe("POST /api/admin/login", () => {
     const passwordHash = hashSync(password, 10);
     db.insert(adminUsers).values({ username, passwordHash }).run();
 
-    vi.mocked(getDb).mockReturnValue(db);
+    vi.mocked(getDb).mockReturnValue({ dialect: "sqlite", db });
   });
 
   it("returns 200 with auth cookie on valid credentials", async () => {

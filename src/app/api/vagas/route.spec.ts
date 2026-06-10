@@ -39,7 +39,7 @@ describe("GET /api/vagas", () => {
       .values({ username: AUTH_USER.username, passwordHash: "dummy" })
       .run();
 
-    vi.mocked(getDb).mockReturnValue(db);
+    vi.mocked(getDb).mockReturnValue({ dialect: "sqlite", db });
 
     const secret = new TextEncoder().encode(JWT_SECRET);
     const token = await new SignJWT({

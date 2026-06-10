@@ -48,7 +48,7 @@ describe("GET /api/sse/entrada", () => {
 
     db.insert(parkingSpots).values({ code: 1, status: "disponivel" }).run();
 
-    vi.mocked(getDb).mockReturnValue(db);
+    vi.mocked(getDb).mockReturnValue({ dialect: "sqlite", db });
   });
 
   it("exports force-dynamic", async () => {
@@ -79,7 +79,7 @@ describe("GET /api/sse/entrada", () => {
   });
 
   it("sends error via SSE when no spots available", async () => {
-    const db = vi.mocked(getDb)();
+    const { db } = vi.mocked(getDb)();
     db.update(parkingSpots)
       .set({ status: "ocupada" })
       .where(eq(parkingSpots.id, 1))
