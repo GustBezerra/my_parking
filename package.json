@@ -11,7 +11,10 @@
     "test:unit": "vitest run src/lib/use-cases",
     "test:e2e": "vitest run src/app/api",
     "test:watch": "vitest",
-    "seed": "npx tsx src/lib/seed.ts"
+    "seed": "npx tsx src/lib/seed.ts",
+    "seed:pg": "NODE_ENV=production npx tsx src/lib/seed-pg.ts",
+    "db:generate:pg": "drizzle-kit generate --config=drizzle.config.pg.ts",
+    "db:migrate:pg": "drizzle-kit migrate --config=drizzle.config.pg.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -20,6 +23,7 @@
     "jose": "^6.2.3",
     "next": "16.2.6",
     "next-swagger-doc": "^0.4.1",
+    "postgres": "^3.4.9",
     "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
