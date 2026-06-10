@@ -10,3 +10,7 @@ export type { AdminUsersRepository } from "./admin-users";
 export { SqliteParkingSpotsRepository } from "./sqlite/parking-spots";
 export { SqliteEntriesRepository } from "./sqlite/entries";
 export { SqliteAdminUsersRepository } from "./sqlite/admin-users";
+
+export { SupabaseParkingSpotsRepository } from "./supabase/parking-spots";
+export { SupabaseEntriesRepository } from "./supabase/entries";
+export { SupabaseAdminUsersRepository } from "./supabase/admin-users";
