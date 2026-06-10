@@ -13,7 +13,7 @@ export type AdminLoginOutput = {
 };
 
 export class AdminLoginUseCase {
-  constructor(private adminUsersRepo: AdminUsersRepository) {}
+  constructor(private adminUsersRepo: AdminUsersRepository) { }
 
   async execute(username: string, password: string): Promise<AdminLoginOutput> {
     const admin = await this.adminUsersRepo.findByUsername(username);
