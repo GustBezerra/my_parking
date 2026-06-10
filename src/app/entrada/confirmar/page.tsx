@@ -115,21 +115,17 @@ function ConfirmarContent() {
     <div className={styles.container}>
       <div className={styles.card}>
         <h1 className={styles.title}>Vaga {state.spotCode} reservada!</h1>
-        <p className={styles.message}>Guarde este QR Code para usar na saída.</p>
+        <p className={styles.message}>
+          Na saída, aponte este Qr Code para a câmera ou clique no botão abaixo.
+        </p>
         <img
           src={state.saidaQrUrl}
           alt="QR Code de saída"
           className={styles.qrImage}
         />
-        <p className={styles.token}>
-          <small>Token: {state.token}</small>
-        </p>
         <div className={styles.actions}>
           {exitState === "idle" && (
             <>
-              <p className={styles.hint}>
-                Você pode usar o QR Code ou clicar no botão abaixo para liberar sua vaga.
-              </p>
               <button className={styles.exitButton} onClick={handleExit}>
                 Sair
               </button>
@@ -149,6 +145,9 @@ function ConfirmarContent() {
             </>
           )}
         </div>
+        <p className={styles.token}>
+          <small>Token: {state.token}</small>
+        </p>
       </div>
     </div>
   );

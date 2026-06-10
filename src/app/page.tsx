@@ -12,6 +12,7 @@ interface EntradaEvent {
 export default function Home() {
   const router = useRouter();
 
+  const [showInfo, setShowInfo] = useState(false);
   const [qrCode, setQrCode] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -48,12 +49,51 @@ export default function Home() {
   return (
     /* Melhorar o layout e a estética aqui*/
     <main className={styles.home}>
-      <button
-        className={styles.adminButton}
-        onClick={() => router.push("/admin/dashboard")}
-      >
-        ⚙️
-      </button>
+      <div className={styles.topButtons}>
+        <button className={styles.adminButton} onClick={() => router.push("/admin/dashboard")}>
+          ⚙️
+        </button>
+
+        <div className={styles.infoContainer}>
+          <button className={styles.infoButton} onClick={() => setShowInfo(!showInfo)}>
+            👥
+          </button>
+
+          {showInfo && (
+            <div className={styles.dropdown}>
+              <h4>Frontend</h4>
+              <ul>
+                <li>Ádamo Levy</li>
+                <li>Gustavo Silva</li>
+                <li>Kayo Ranniel</li>
+                <li>Maria Alícia</li>
+                <li>Timóteo Moura</li>
+              </ul>
+
+              <h4>Backend</h4>
+              <ul>
+                <li>Antônio José</li>
+                <li>Enzho Pablo</li>
+                <li>Francisco David</li>
+                <li>Jose Alexsandro</li>
+                <li>Kamila Alves</li>
+                <li>Raffael Gonçalves</li>
+                <li>Raquel Aparecida</li>
+                <li>Raylan Levi</li>
+                <li>Sergio Carvalho</li>
+                <li>Victor César</li>
+              </ul>
+
+              <hr />
+
+              <a
+                href="https://github.com/anatielsantos/my_parking" target="_blank" rel="noopener noreferrer">
+                Repositório GitHub
+              </a>
+            </div>
+          )}
+        </div>
+      </div>
 
       <section className={styles.card}>
         <h1 className={styles.title}>My Parking</h1>
