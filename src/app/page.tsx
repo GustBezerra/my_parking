@@ -50,7 +50,7 @@ export default function Home() {
     <main className={styles.home}>
       <button
         className={styles.adminButton}
-        onClick={() => router.push("/admin/login")}
+        onClick={() => router.push("/admin/dashboard")}
       >
         ⚙️
       </button>
